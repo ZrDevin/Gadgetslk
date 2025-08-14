@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GadgetsLk</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #898a74 ;
+      color: #333;
+    }
+    header {
+      background: #222;
+      color: white;
+      padding: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      flex-grow: 1;
+      min-width: 200px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 15px;
+      cursor: pointer;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    #search-bar {
+      padding: 5px 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: none;
+      margin-left: 15px;
+      min-width: 180px;
+    }
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    #category-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #category-list li {
+      display: inline-block;
+    }
+    #category-list button {
+      padding: 7px 15px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    #category-list button:hover {
+      background-color: #0056b3;
+    }
+    #products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+      gap: 20px;
+    }
+    .product {
+      background: white;
+      border-radius: 5px;
+      padding: 15px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product img {
+      max-width: 100%;
+      height: 150px;
+      object-fit: contain;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .product h3 {
+      margin: 5px 0;
+      font-size: 1.1rem;
+    }
+    .product p {
+      margin: 5px 0 10px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .product button {
+      padding: 10px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .product button:hover {
+      background-color: #1e7e34;
+    }
+    footer {
+      background: #222;
+      color: white;
+      text-align: center;
+      padding: 15px 10px;
+      margin-top: 40px;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+
+    /* Cart and Login styles + payment moved here */
+    #cart-items > div, #order-summary ul {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+    #cart-items button, #cart-items button.remove-btn {
+      margin-left: 5px;
+      padding: 4px 7px;
+      font-weight: bold;
+      border-radius: 3px;
+      border: none;
+      cursor: pointer;
+    }
+    #cart-items button.remove-btn {
+      background: red;
+      color: white;
+    }
+    #cart-items button:hover {
+      opacity: 0.8;
+    }
+    #login-section, #cart-section {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 20px auto;
+    }
+    #login-section form, #cart-section form {
+      display: flex;
+      flex-direction: column;
+    }
+    #login-section input, #cart-section input {
+      padding: 8px;
+      margin: 5px 0 15px 0;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    #login-section button, #cart-section button {
+      padding: 10px;
+      background: #007bff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      max-width: 150px;
+    }
+    #login-section button:hover, #cart-section button:hover {
+      background: #0056b3;
+    }
+    #payment-msg {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+    }
+    /* Hide sections initially except products */
+    #login-section, #cart-section {
+      display: none;
+    }
+
+    /* Layout helper */
+    #cart-summary {
+      margin-top: 15px;
+      margin-bottom: 25px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GadgetsLk</h1>
+    <nav>
+      <a onclick="showSection('products-section')">Home</a>
+      <a onclick="scrollToCategories()">Categories</a>
+      <a onclick="showSection('cart-section')">Cart (<span id="cart-count">0</span>)</a>
+      <a onclick="showSection('login-section')">Login</a>
+    </nav>
+    <input type="text" id="search-bar" placeholder="Search products..." title="Search products by name or category"/>
+  </header>
+
+  <main>
+    <!-- Categories -->
+    <section id="categories" style="max-width: 1200px; margin: auto; margin-bottom: 30px;">
+      <h2>Categories</h2>
+      <ul id="category-list">
+        <li><button onclick="filterCategory('all')">All</button></li>
+        <li><button onclick="filterCategory('laptops')">Laptops</button></li>
+        <li><button onclick="filterCategory('smartphones')">Smartphones</button></li>
+        <li><button onclick="filterCategory('accessories')">Accessories</button></li>
+        <li><button onclick="filterCategory('wearables')">Wearables</button></li>
+      </ul>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products-section">
+      <div id="products"></div>
+    </section>
+
+    <!-- Login Section -->
+    <section id="login-section">
+      <h2>Login</h2>
+      <form id="login-form">
+        <label>Email:<br/>
+          <input type="email" id="email" required />
+        </label>
+        <label>Password:<br/>
+          <input type="password" id="password" required />
+        </label>
+        <button type="submit">Login</button>
+      </form>
+      <p id="login-message" style="color:red;"></p>
+    </section>
+
+    <!-- Cart Section with Payment Form inside -->
+    <section id="cart-section">
+      <h2>Your Cart & Order Submission</h2>
+      <div id="cart-items"></div>
+      <div id="cart-total" style="font-weight:bold; margin-top:10px;"></div>
+      <form id="order-form" style="margin-top: 20px;">
+        <h3>Payment Information</h3>
+        <label>Cardholder Name:<br />
+          <input type="text" id="card-name" required />
+        </label>
+        <label>Card Number:<br />
+          <input type="text" id="card-number" maxlength="16" required pattern="\d{16}" placeholder="16 digits"/>
+        </label>
+        <label>Expiry Date:<br />
+          <input type="month" id="expiry" required />
+        </label>
+        <label>CVV:<br />
+          <input type="text" id="cvv" maxlength="3" required pattern="\d{3}" placeholder="3 digits"/>
+        </label>
+        <button type="submit">Submit Order</button>
+      </form>
+      <p id="payment-msg"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>About Us: We are a leading tech store providing the latest gadgets and accessories worldwide.</p>
+  </footer>
+
+  <script>
+    const products = [
+      // Laptops
+      {id:1, name:"ROG Strix g16", category:"laptops", price:899, image:"https://laptopstore.lk/public/dbimages/product/1753255568_pdt_1.jpg"},
+      {id:2, name:"ASUS TUF F15 FX507VI", category:"laptops", price:1099, image:"https://laptopstore.lk/public/dbimages/product/1753943618_pdt_1.jpg"},
+      {id:3, name:"HP OmniBook 5 Flip 14", category:"laptops", price:1299, image:"https://laptopstore.lk/public/dbimages/product/1754990176_pdt_1.jpg"},
+      {id:4, name:"MSI VECTOR 16 HX AI", category:"laptops", price:999, image:"https://laptopstore.lk/public/dbimages/product/1750421518_pdt_1.png"},
+      {id:5, name:"Asus ExpertBook B1502CVA i3", category:"laptops", price:799, image:"https://laptopstore.lk/public/dbimages/product/1745657166_pdt_1.jpg"},
+      {id:6, name:"HP VICTUS 15-FB2082WM", category:"laptops", price:1199, image:"https://laptopstore.lk/public/dbimages/product/1723096800_pdt_1.jpg"},
+      {id:7, name:"Lenovo LOQ 15IAX9 Gaming  i5 12th", category:"laptops", price:1399, image:"https://laptopstore.lk/public/dbimages/product/1754465275_pdt_1.jpg"},
+      {id:8, name:"Acer Predator Helios Neo 14", category:"laptops", price:1049, image:"https://laptopstore.lk/public/dbimages/product/1753863352_pdt_1.jpg"},
+      {id:9, name:"Acer Nitro V16", category:"laptops", price:949, image:"https://laptopstore.lk/public/dbimages/product/1750750936_pdt_1.jpg"},
+      {id:10, name:"Lenovo Legion 5 16IRX9", category:"laptops", price:1099, image:"https://laptopstore.lk/public/dbimages/product/1734596142_pdt_1.jpg"},
+      
+      // Smartphones
+      {id:11, name:"iPhone 16 Pro Max", category:"smartphones", price:1799, image:"https://idealz.lk/wp-content/uploads/2024/10/iPhone-16-Pro-Max-Black.jpg"},
+      {id:12, name:"Galaxy S25 Ultra", category:"smartphones", price:999, image:"https://idealz.lk/wp-content/uploads/2025/02/S25-ULTRA-14-1.jpg"},
+      {id:13, name:"iPhone 16", category:"smartphones", price:699, image:"https://idealz.lk/wp-content/uploads/2024/10/iPhone-16-Blue.jpg"},
+      {id:14, name:"Redmi Note 14 Pro+ 5G", category:"smartphones", price:899, image:"https://idealz.lk/wp-content/uploads/2025/02/NOTE-14-PRO-5G-BLUE-1.jpg"},
+      {id:15, name:"HUAWEI Nova Y90 – 8GB RAM 128GB", category:"smartphones", price:1099, image:"https://idealz.lk/wp-content/uploads/2025/03/nova-Y90-Emerald-Green.jpg"},
+      {id:16, name:"SAMSUNG Galaxy A56 5G", category:"smartphones", price:799, image:"https://idealz.lk/wp-content/uploads/2025/04/A56-5G-GREEN.jpg"},
+      {id:17, name:"iPhone 15 Pro Max", category:"smartphones", price:999, image:"https://idealz.lk/wp-content/uploads/2024/10/iPhone-15-Pro-Max-Titanium.jpg"},
+      {id:18, name:"iPhone 15", category:"smartphones", price:1299, image:"https://idealz.lk/wp-content/uploads/2024/10/iPhone-15-Black.jpg"},
+      {id:19, name:"Samsung Galaxy Z Fold 7 12GB RAM 256GB", category:"smartphones", price:699, image:"https://celltronics.lk/wp-content/uploads/2025/07/Galaxy-Z-Fold-7.webp"},
+      {id:20, name:"Google Pixel 9 12GB RAM 128GB", category:"smartphones", price:899, image:"https://imagedelivery.net/7D3NQGy_afPWwbfcO5Acjw/celltronics.lk/2024/08/Google-Pixel-9-2.jpg/w=800,h=800,fit=crop"},
+      
+      // Accessories
+      {id:21, name:"Fantech K511 Hunter Pro Keyboard", category:"accessories", price:29, image:"https://cdn.sanity.io/images/yqd1zell/production/4a3a226744d8b4a7375bb8f473a3dbf4a399a856-500x500.png"},
+      {id:22, name:"Fantech MK877S Blue-White Gaming Wired Keyboard", category:"accessories", price:79, image:"https://cdn.sanity.io/images/yqd1zell/production/4b3bb04c14ec662bf4f86040b915d5ab2c09a8ff-500x500.png"},
+      {id:23, name:"BASEUS ADAMAN METAL DIGITAL DISPLAY FAST CHARGE POWER BANK 20000mAh 30W 2022 EditonTarnish", category:"accessories", price:59, image:"https://cdn.sanity.io/images/yqd1zell/production/9196ea8ea4f81f0923142d2a786c52f2ecfc6806-500x500.png"},
+      {id:24, name:"Fantech Crypto VX7 Wired Gaming Mouse", category:"accessories", price:129, image:"https://cdn.sanity.io/images/yqd1zell/production/fcb6e0021f664dc70df8aa66ad29c20105d9cf09-500x500.png"},
+      {id:25, name:"Prolink PRO1201SFC 1200VA UPS", category:"accessories", price:59, image:"https://cdn.sanity.io/images/yqd1zell/production/b0657323163404e86c3b834e65d66c9807dec366-500x500.png"},
+      {id:26, name:"HAVIT SK563 RGB LIGHT SPEAKER", category:"accessories", price:39, image:"https://cdn.sanity.io/images/yqd1zell/production/6e24fd6af8d9cc9a2acaeda9919b3c4cb7f5491a-500x500.png"},
+      {id:27, name:"Green Lion Parma Pro Wireless Speaker - Grey", category:"accessories", price:49, image:"https://cdn.sanity.io/images/yqd1zell/production/8d8cf618d0fb377a952e7ff19557efc03dc8689e-500x500.png"},
+      {id:28, name:"Fantech MPR351S Firefly RGB Mouse Pad", category:"accessories", price:25, image:"https://cdn.sanity.io/images/yqd1zell/production/8888470cf1f44fc190eb2fbbf7d5645dde71092c-500x500.png"},
+      {id:29, name:"HP SMART TANK 515 ALL IN ONE WITH WIFI", category:"accessories", price:55, image:"https://cdn.sanity.io/images/yqd1zell/production/df4b4b3201bffd748158edc91b2a00b5c3eee1a2-500x500.png"},
+      {id:30, name:"A4 TECH PK-910H 1080P FULL HD WEB CAM", category:"accessories", price:20, image:"https://cdn.sanity.io/images/yqd1zell/production/4cc130d850bfb83b8aa09d35def97a3be79363db-500x500.png"},
+      
+      // Wearables
+      {id:31, name:"Apple Watch Serise 10", category:"wearables", price:199, image:"https://idealz.lk/wp-content/uploads/2024/10/Series-10-2.jpg"},
+      {id:32, name:"WHOOP FITNESS BAND 5.0", category:"wearables", price:249, image:"https://idealz.lk/wp-content/uploads/2025/07/WHOOPS-5.0-1.jpg"},
+      {id:33, name:"Baseus Bowie H1 Pro Noise-Cancellation Wireless Headphones", category:"wearables", price:99, image:"https://cdn.sanity.io/images/yqd1zell/production/00cbb50fbf4649f40da914d11b28a857eaf71025-500x500.png"},
+      {id:34, name:"JBL TUNE 670NC", category:"wearables", price:299, image:"https://idealz.lk/wp-content/uploads/2025/03/JBL-TUNE-670ANC-4.jpg"},
+      {id:35, name:"Galaxy Buds2 Pro", category:"wearables", price:129, image:"https://idealz.lk/wp-content/uploads/2024/10/Galaxy-Buds-2-Pro-Prpl.jpg"},
+      {id:36, name:"MARSHALL KILBURN II", category:"wearables", price:149, image:"https://idealz.lk/wp-content/uploads/2025/02/MARSHALL-KILBURN-6.jpg"},
+      {id:37, name:"JBL TUNE 110 In-ear headphones", category:"wearables", price:349, image:"https://idealz.lk/wp-content/uploads/2024/10/Jbl-Tune-110-Black.jpg"},
+      {id:38, name:"boAt Rockerz 450", category:"wearables", price:179, image:"https://idealz.lk/wp-content/uploads/2025/05/boAt-Rockerz-450-7.jpg"},
+      {id:39, name:"BASEUS QPOW PRO DIGITAL DISPLAY FAST CHARGE POWER BANK 20000mAh 22.5W TYPE-C EDITION BLACK", category:"wearables", price:89, image:"https://cdn.sanity.io/images/yqd1zell/production/5a88b285d8e36b01a5cebf5f70d5cc7bba5278d4-500x500.png"},
+      {id:40, name:"Porodo LFS034 2-Axis Gimbal Stablizer - Black", category:"wearables", price:120, image:"https://cdn.sanity.io/images/yqd1zell/production/ff44303e8a4813940c4f94460a771add35fec1a9-500x500.png"},
+      
+      // More Laptops
+      {id:41, name:"MacBook Air M4 -13 inch ", category:"laptops", price:1399, image:"https://idealz.lk/wp-content/uploads/2025/03/MACBOOK-AIR-M4-SILVER.jpg"},
+      {id:42, name:"MacBook Pro M4 Pro", category:"laptops", price:1599, image:"https://idealz.lk/wp-content/uploads/2025/02/MACBOOK-PRO-M4-PRO-BLACK.jpg"},
+      {id:43, name:"MacBook Air M3", category:"laptops", price:1799, image:"https://idealz.lk/wp-content/uploads/2024/10/MacBook-Air-M3-2.jpg"},
+      {id:44, name:"MacBook Air M2", category:"laptops", price:1299, image:"https://idealz.lk/wp-content/uploads/2024/10/MacBook-Air-M2-1.jpg"},
+      {id:45, name:"Lenovo IdeaPad Slim 3 15IRU8 – i3", category:"laptops", price:899, image:"https://laptopstore.lk/public/dbimages/product/1695708133_pdt_1.jpg"},
+      
+      // More Smartphones
+      {id:46, name:"Nothing Phone (3a) Pro 12GB RAM 256GB", category:"smartphones", price:1099, image:"https://celltronics.lk/wp-content/uploads/2025/06/Nothing-Phone-3a-Pro-2.webp"},
+      {id:47, name:"Google Pixel 9a 8GB RAM 128GB", category:"smartphones", price:899, image:"https://celltronics.lk/wp-content/uploads/2025/04/Google-Pixel-9a-2.jpg"},
+      {id:48, name:"Apple iPhone 16e 128GB", category:"smartphones", price:1249, image:"https://imagedelivery.net/7D3NQGy_afPWwbfcO5Acjw/celltronics.lk/2025/03/Apple-iPhone-16e-1.jpg/w=800,h=800,fit=crop"},
+      
+      // More Accessories
+      {id:49, name:"K11 6x2 Gaming Table", category:"accessories", price:19, image:"https://cdn.sanity.io/images/yqd1zell/production/d8df42609474260d63f61d6ad42b417d4a9315ed-396x396.png"},
+      {id:50, name:"ELGATO STREAM DECK XL", category:"accessories", price:12, image:"https://cdn.sanity.io/images/yqd1zell/production/d1d88a529e56ce141bf47c0edf7da01a58bda90c-500x500.png"}
+    ];
+
+    const productsSection = document.getElementById("products");
+    const searchBar = document.getElementById("search-bar");
+    const cartCountSpan = document.getElementById("cart-count");
+    const loginSection = document.getElementById("login-section");
+    const cartSection = document.getElementById("cart-section");
+    const productsSectionWrap = document.getElementById("products-section");
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    // Show only one main section at a time
+    function showSection(sectionId) {
+      loginSection.style.display = "none";
+      cartSection.style.display = "none";
+      productsSectionWrap.style.display = "none";
+
+      switch (sectionId) {
+        case "login-section":
+          loginSection.style.display = "block";
+          break;
+        case "cart-section":
+          cartSection.style.display = "block";
+          renderCart();
+          break;
+        case "products-section":
+        default:
+          productsSectionWrap.style.display = "block";
+          break;
+      }
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function scrollToCategories() {
+      document.getElementById("categories").scrollIntoView({behavior:"smooth"});
+    }
+
+    // Update cart badge
+    function updateCartCount() {
+      let count = cart.reduce((acc, item) => acc + item.quantity, 0);
+      cartCountSpan.textContent = count;
+    }
+
+    // Render products to page
+    function renderProducts(productList) {
+      productsSection.innerHTML = "";
+      if(productList.length === 0) {
+        productsSection.innerHTML = "<p>No products found.</p>";
+        return;
+      }
+      productList.forEach(product => {
+        const productDiv = document.createElement("div");
+        productDiv.classList.add("product");
+
+        productDiv.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" />
+          <h3>${product.name}</h3>
+          <p>Category: ${product.category}</p>
+          <p>Price: $${product.price}</p>
+          <button onclick="addToCart(${product.id})">Add to Cart</button>
+        `;
+        productsSection.appendChild(productDiv);
+      });
+    }
+
+    // Filter by category
+    function filterCategory(category) {
+      if(category === "all"){
+        renderProducts(products);
+      } else {
+        const filtered = products.filter(p => p.category === category);
+        renderProducts(filtered);
+      }
+    }
+
+    // Search filter
+    searchBar.addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm) || p.category.toLowerCase().includes(searchTerm));
+      renderProducts(filtered);
+      showSection("products-section");
+    });
+
+    // Add product to cart or increase quantity
+    function addToCart(productId) {
+      const index = cart.findIndex(item => item.id === productId);
+      if (index === -1) {
+        cart.push({id: productId, quantity: 1});
+      } else {
+        cart[index].quantity++;
+      }
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateCartCount();
+      alert("Product added to cart");
+    }
+
+    // Cart rendering and management
+    const cartItemsDiv = document.getElementById("cart-items");
+    const cartTotalDiv = document.getElementById("cart-total");
+
+    function renderCart() {
+      if(cart.length === 0) {
+        cartItemsDiv.innerHTML = "<p>Your cart is empty.</p>";
+        cartTotalDiv.textContent = "";
+        return;
+      }
+
+      let total = 0;
+      cartItemsDiv.innerHTML = "";
+      
+      cart.forEach(item => {
+        const product = products.find(p => p.id === item.id);
+        if (!product) return;
+        const itemTotal = product.price * item.quantity;
+        total += itemTotal;
+
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <h3>${product.name}</h3>
+          <p>Price: $${product.price}</p>
+          <p>Quantity: 
+            <button onclick="changeQuantity(${product.id}, -1)">-</button>
+            ${item.quantity}
+            <button onclick="changeQuantity(${product.id}, 1)">+</button>
+          </p>
+          <p>Subtotal: $${itemTotal.toFixed(2)}</p>
+          <button class="remove-btn" onclick="removeFromCart(${product.id})">Remove</button>
+        `;
+        cartItemsDiv.appendChild(div);
+      });
+
+      cartTotalDiv.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    function changeQuantity(productId, delta) {
+      const index = cart.findIndex(c => c.id === productId);
+      if(index !== -1){
+        cart[index].quantity += delta;
+        if(cart[index].quantity < 1){
+          cart.splice(index, 1);
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        renderCart();
+      }
+      updateCartCount();
+    }
+
+    function removeFromCart(productId){
+      cart = cart.filter(c => c.id !== productId);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      renderCart();
+      updateCartCount();
+    }
+
+    // Login form
+    const loginForm = document.getElementById("login-form");
+    const loginMsg = document.getElementById("login-message");
+    loginForm.addEventListener("submit", function(e){
+      e.preventDefault();
+      const email = e.target.email.value.trim();
+      const password = e.target.password.value.trim();
+
+      if(email === "user@example.com" && password === "password123"){
+        alert("Login successful!");
+        loginMsg.textContent = "";
+        showSection("products-section");
+      } else {
+        loginMsg.textContent = "Invalid email or password";
+      }
+    });
+
+    // Order form (now inside Cart)
+    const orderForm = document.getElementById("order-form");
+    const paymentMsg = document.getElementById("payment-msg");
+
+    orderForm.addEventListener("submit", function(e){
+      e.preventDefault();
+      if(cart.length === 0){
+        alert("Your cart is empty. Cannot submit order.");
+        return;
+      }
+      paymentMsg.textContent = "Processing order...";
+      setTimeout(() => {
+        paymentMsg.textContent = "Order submitted successfully! Thank you for your purchase.";
+        cart = [];
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCartCount();
+        renderCart();
+        orderForm.reset();
+      }, 2000);
+    });
+
+    // Initial load
+    renderProducts(products);
+    updateCartCount();
+    showSection("products-section");
+  </script>
+</body>
+</html>
